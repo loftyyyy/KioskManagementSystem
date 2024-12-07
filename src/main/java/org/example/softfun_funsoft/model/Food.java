@@ -1,15 +1,26 @@
 package org.example.softfun_funsoft.model;
 
-import java.util.Objects;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 public class Food {
+    private int foodId;
     private String name;
+    private Double price;
+    private int categoryId;
     private String imgSrc;
-    private double price;
-    private String color;
-    private String category;
+    private int stock;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 
-    private int quantity;
+    // Getters and Setters
+    public int getFoodId() {
+        return foodId;
+    }
+
+    public void setFoodId(int foodId) {
+        this.foodId = foodId;
+    }
 
     public String getName() {
         return name;
@@ -17,6 +28,22 @@ public class Food {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
     }
 
     public String getImgSrc() {
@@ -27,48 +54,27 @@ public class Food {
         this.imgSrc = imgSrc;
     }
 
-    public double getPrice() {
-        return price;
+    public int getStock() {
+        return stock;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setStock(int stock) {
+        this.stock = stock;
     }
 
-    public String getColor() {
-        return color;
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
 
-    public void setColor(String color) {
-        this.color = color;
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public String getCategory() {
-        return category;
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
     }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (o == null || getClass() != o.getClass()) return false;
-//        Food food = (Food) o;
-//        return Objects.equals(name, food.name);
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return Objects.hash(name);
-//    }
 }

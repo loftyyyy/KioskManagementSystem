@@ -1,10 +1,10 @@
 package org.example.softfun_funsoft.model;
 
 public class FoodCategory {
+    private int categoryId;
 
     private String name;
     private String imgSrc;
-    private String color;
 
     public String getName() {
         return name;
@@ -22,11 +22,11 @@ public class FoodCategory {
         this.imgSrc = imgSrc;
     }
 
-    public String getColor() {
-        return color;
+    public int getCategoryId() {
+        return categoryId;
     }
 
-    public void setColor(String color) {
-        this.color = color;
+    public void setCategoryId(int category_id) {
+        this.categoryId = category_id;
     }
 }
