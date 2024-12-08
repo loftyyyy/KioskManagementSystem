@@ -4,6 +4,8 @@ public class CurrentUser {
     //TODO: Create an attribute for every primary key here in the Current User singleton for easy access. 
     private static CurrentUser instance;
     private String userId;
+    private int cartId;
+    private Boolean dineIn;
 
     private CurrentUser() {
     }
@@ -21,5 +23,19 @@ public class CurrentUser {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public Boolean getDineIn() {
+        return dineIn;
+    }
+    public void setDineIn(Boolean dineIn) {
+        this.dineIn = dineIn;
+    }
+
+    public int getCartId() {
+        return cartId;
+    }
+    public void setCartId(int cartId) {
+        this.cartId = cartId;
     }
 }

@@ -2,6 +2,7 @@ package org.example.softfun_funsoft.DaoImpl;
 
 import org.example.softfun_funsoft.DAO.FoodCategoryDao;
 import org.example.softfun_funsoft.Database.DatabaseConnection;
+import org.example.softfun_funsoft.model.Food;
 import org.example.softfun_funsoft.model.FoodCategory;
 
 import java.sql.*;
@@ -87,4 +88,43 @@ public class FoodCategoryDaoImpl implements FoodCategoryDao {
             e.printStackTrace();
         }
     }
+    public int getCategoryIdByName(String categoryName) {
+        String query = "SELECT category_id FROM foodcategories WHERE name = ?";
+        try (PreparedStatement preparedStatement = DatabaseConnection.getConnection().prepareStatement(query)) {
+            preparedStatement.setString(1, categoryName);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("category_id");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1; // Return -1 if the category is not found
+    }
+
+    public String getCategoryNameByFoodName(String foodName) {
+        String sql = "SELECT c.name " +
+                "FROM foods f " +
+                "JOIN foodcategories c ON f.category_id = c.category_id " +
+                "WHERE f.name = ?";
+        String categoryName = null;
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, foodName);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                categoryName = rs.getString("name");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return categoryName;
+    }
+
 }

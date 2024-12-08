@@ -103,4 +103,28 @@ public class FoodDaoImpl implements org.example.softfun_funsoft.DAO.FoodDao {
         }
     }
 
+    public List<Food> getAllFoodByCategoryId(int id){
+        String sql = "SELECT * FROM Foods WHERE category_id = ?";
+        List<Food> foods = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Food food = new Food();
+                food.setFoodId(rs.getInt("food_id"));
+                food.setName(rs.getString("name"));
+                food.setPrice(rs.getDouble("price"));
+                food.setCategoryId(rs.getInt("category_id"));
+                food.setImgSrc(rs.getString("img_src"));
+                food.setStock(rs.getInt("stock"));
+                food.setCreatedAt(rs.getTimestamp("created_at"));
+                food.setUpdatedAt(rs.getTimestamp("updated_at"));
+                foods.add(food);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return foods;
+    }
 }

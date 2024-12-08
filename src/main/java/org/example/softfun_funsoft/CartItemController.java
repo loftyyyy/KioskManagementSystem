@@ -4,9 +4,11 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
+import org.example.softfun_funsoft.DaoImpl.CartItemDaoImpl;
+import org.example.softfun_funsoft.DaoImpl.FoodDaoImpl;
 import org.example.softfun_funsoft.listener.MyCartItemListener;
+import org.example.softfun_funsoft.model.CartItem;
 import org.example.softfun_funsoft.model.Food;
-import org.example.softfun_funsoft.singleton.Cart;
 
 public class CartItemController {
     @FXML
@@ -30,29 +32,29 @@ public class CartItemController {
     @FXML
     private Label itemNumber;
 
-    private Food food;
+    private CartItem cartItem;
     private MyCartItemListener myCartItemListener;
-
-    private Cart cart;
-
+    private CartItemDaoImpl cartItemDaoImpl;
+    private FoodDaoImpl foodDaoImpl;
     private int number;
 
-    public void setData(Food food, MyCartItemListener myCartItemListener){
-        this.food = food;
+    public void setData(Food food, MyCartItemListener myCartItemListener) {
+        //TODO: Fix this error here
+        this.cartItem = cartItem;
         this.myCartItemListener = myCartItemListener;
-        this.cart = Cart.getInstance();
-        number = cart.getCartItems().indexOf(food) + 1;
+        this.cartItemDaoImpl = new CartItemDaoImpl(); // Initialize CartItemDaoImpl
+        this.foodDaoImpl = new FoodDaoImpl(); // Initialize FoodDaoImpl
+//        number = cartItemDaoImpl.findAll().indexOf(cartItem) + 1; // Use CartItemDaoImpl to get the index
+        food = foodDaoImpl.findById(cartItem.getFoodId()); // Assuming you have a method to get Food by ID
         itemName.setText(food.getName());
         itemNumber.setText(String.valueOf(number));
-        itemQuantity.setText(String.valueOf(food.getQuantity()));
-        itemPrice.setText("PHP " + food.getPrice());
-        totalPrice.setText("PHP " + (food.getPrice() * food.getQuantity()));
+        itemQuantity.setText(String.valueOf(cartItem.getQuantity()));
+        itemPrice.setText("PHP " + cartItem.getPrice());
+        totalPrice.setText("PHP " + (cartItem.getPrice() * cartItem.getQuantity()));
         img.setImage(new javafx.scene.image.Image(getClass().getResourceAsStream(food.getImgSrc())));
 
-
-        removeBTN.setOnAction(e ->{
-            myCartItemListener.onRemoveItem(food);
-        });
-
+//        removeBTN.setOnAction(e -> {
+//            myCartItemListener.onRemoveItem(food);
+//        });
     }
 }

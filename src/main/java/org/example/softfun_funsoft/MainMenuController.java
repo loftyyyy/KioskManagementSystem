@@ -20,18 +20,18 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.example.softfun_funsoft.DaoImpl.*;
 import org.example.softfun_funsoft.lang.LangCheck;
 import org.example.softfun_funsoft.listener.MyCartItemListener;
 import org.example.softfun_funsoft.listener.MyCategoryListener;
 import org.example.softfun_funsoft.listener.MyItemListener;
+import org.example.softfun_funsoft.model.Cart;
+import org.example.softfun_funsoft.model.CartItem;
 import org.example.softfun_funsoft.model.Food;
 import org.example.softfun_funsoft.model.FoodCategory;
-import org.example.softfun_funsoft.singleton.Cart;
 import org.example.softfun_funsoft.singleton.Categories;
-import org.example.softfun_funsoft.singleton.MenuItem;
-import org.example.softfun_funsoft.singleton.Order;
+import org.example.softfun_funsoft.singleton.CurrentUser;
 import org.example.softfun_funsoft.utils.SoundManager;
-
 
 import java.io.IOException;
 import java.net.URL;
@@ -108,17 +108,20 @@ public class MainMenuController implements Initializable {
     @FXML
     private Label grandTotal;
 
-
     private MyItemListener myItemListener;
     private MyCategoryListener myCategoryListener;
     private MyCartItemListener myCartItemListener;
     private List<Food> foods = new ArrayList<>();
     private List<FoodCategory> categories = new ArrayList<>();
     private List<Food> itemByCategory = new ArrayList<>();
-
-    private Cart cart;
+    private MenuItemDaoImpl menuItemDao;
+    private CartDaoImpl cartDaoImpl;
+    private FoodCategoryDaoImpl foodCategoryDao;
+    private FoodDaoImpl foodDaoImpl;
 
     private Food chosenFood;
+    private CurrentUser currentUser;
+    private CartItemDaoImpl cartItemDaoImpl;
 
     private int currentQuantity = 1;
     Timer timer = new Timer();
@@ -126,7 +129,6 @@ public class MainMenuController implements Initializable {
         String searchName = searchBar.getText().toLowerCase();
         embedMatchingFood(searchName);
     };
-
 
     public void showNotification(Food food) {
         HBox notification = new HBox();
@@ -142,17 +144,14 @@ public class MainMenuController implements Initializable {
 
         notification.getChildren().addAll(foodImage, foodDetails);
 
-// Add listener to the AnchorPane size to update the position dynamically
         mainAnchorpane.widthProperty().addListener((observable, oldValue, newValue) -> {
-            double notificationWidth = notification.prefWidth(-1);  // Get the preferred width of the notification
-            double xPosition = newValue.doubleValue() - 250 - notificationWidth;  // 250px from the right
-
+            double notificationWidth = notification.prefWidth(-1);
+            double xPosition = newValue.doubleValue() - 250 - notificationWidth;
             notification.setLayoutX(xPosition);
         });
 
-// Add listener to the AnchorPane height to update the Y position dynamically
         mainAnchorpane.heightProperty().addListener((observable, oldValue, newValue) -> {
-            double yPosition = newValue.doubleValue() - 190;  // Adjust as needed for vertical placement
+            double yPosition = newValue.doubleValue() - 190;
             notification.setLayoutY(yPosition);
         });
 
@@ -168,39 +167,41 @@ public class MainMenuController implements Initializable {
         pause.setOnFinished(event -> fadeOut.play());
         pause.play();
     }
-    public void setAddQuantity(){
+
+    public void setAddQuantity() {
         currentQuantity++;
         quantity.setText(String.valueOf(currentQuantity));
         SoundManager.playAddandSubt();
     }
 
-    public void setSubtractQuantity(){
-        if(currentQuantity > 1){
+    public void setSubtractQuantity() {
+        if (currentQuantity > 1) {
             currentQuantity--;
             quantity.setText(String.valueOf(currentQuantity));
-            SoundManager.playAddandSubt();;
+            SoundManager.playAddandSubt();
         }
     }
 
-    public void setAddToCart(){
+    public void setAddToCart() {
+        CartItem cartItem = new CartItem();
+        cartItem.setCartId(currentUser.getCartId());
+        cartItem.setFoodId(chosenFood.getFoodId());
+        System.out.println(currentUser.getCartId());
+        cartItem.setQuantity(currentQuantity);
+        cartItem.setPrice(chosenFood.getPrice());
+        cartItemDaoImpl.save(cartItem);
+
+
+
+
         orderPanel.setVisible(false);
         addAnchorPane.setVisible(false);
-        chosenFood.setQuantity(Integer.parseInt(quantity.getText()));
         showNotification(chosenFood);
-        cart.addItem(chosenFood);
-        itemsLabel.setText(String.valueOf(cart.getCartItems().size()) + " item/s in the cart");
+        itemsLabel.setText(cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()).size() + " item/s in the cart");
         SoundManager.playClick();
-
-        //TODO: Implementing Database for each item added to cart
-
-
-
     }
 
-    public void proceedToCheckoutAction(){
-        Order order = Order.getInstance();
-        order.clearOrder();
-        order.addItems(cart.getCartItems());
+    public void proceedToCheckoutAction() {
 
         try {
             Parent newRoot = FXMLLoader.load(getClass().getResource("PaymentTypes.fxml"));
@@ -211,30 +212,26 @@ public class MainMenuController implements Initializable {
             fadeOut.setFromValue(1.0);
             fadeOut.setToValue(0.0);
             fadeOut.setOnFinished(e -> {
-
                 rootStackPane.getChildren().remove(currentRoot);
                 rootStackPane.getChildren().add(newRoot);
-
             });
             fadeOut.play();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
-
-
     }
 
-    public void showCart(){
+    public void showCart() {
         double totalPrice = 0;
         cartGrid.getChildren().clear();
         int column = 0;
         int row = 1;
         try {
-            for (Food food : cart.getCartItems()) {
-                totalPrice += (food.getPrice() * food.getQuantity());
+            for (Food food : cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()) ){ // Load items from database
+
+                CartItem currentFood = cartItemDaoImpl.getCartItemByFoodId(food.getFoodId());
+
+                totalPrice += (currentFood.getPrice() * currentFood.getQuantity());
 
                 FXMLLoader fxmlLoader = new FXMLLoader();
                 fxmlLoader.setLocation(getClass().getResource("CartItem.fxml"));
@@ -263,22 +260,19 @@ public class MainMenuController implements Initializable {
         }
 
         grandTotal.setStyle("-fx-text-fill: green;");
-        grandTotal.setText("PHP " + totalPrice );
+        grandTotal.setText("PHP " + totalPrice);
 
         addAnchorPane.setVisible(false);
         cartPane.setVisible(true);
 
-        if(cart.getCartItems().isEmpty()) {
+        if (cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()).isEmpty()) {
             proceedToCheckoutPanel.setVisible(false);
-        }else{
+        } else {
             proceedToCheckoutPanel.setVisible(true);
-
         }
-
-
     }
 
-    private void embedMatchingFood(String searchName){
+    private void embedMatchingFood(String searchName) {
         ArrayList<Food> matchingFoods = new ArrayList<>();
 
         int column = 0;
@@ -287,25 +281,21 @@ public class MainMenuController implements Initializable {
         grid.getChildren().clear();
 
         try {
-
             for (Food food : foods) {
                 if (food.getName().toLowerCase().contains(searchName.toLowerCase())) {
                     matchingFoods.add(food);
                 }
             }
 
-            if(searchName.isEmpty()){
+            if (searchName.isEmpty()) {
                 mainHeader.setText("All Time Favourites");
-            }else if(!matchingFoods.isEmpty()){
-
-                mainHeader.setText(matchingFoods.get(0).getCategory());
-            }else{
+            } else if (!matchingFoods.isEmpty()) {
+                mainHeader.setText(foodCategoryDao.getCategoryNameByFoodName(matchingFoods.get(0).getName()));
+            } else {
                 mainHeader.setText("No Matches Found");
             }
 
-
             for (Food matchingFood : matchingFoods) {
-
                 FXMLLoader fxmlLoader = new FXMLLoader();
                 fxmlLoader.setLocation(getClass().getResource("Item.fxml"));
                 AnchorPane pane = fxmlLoader.load();
@@ -332,8 +322,6 @@ public class MainMenuController implements Initializable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-
     }
 
     public void getSearch() {
@@ -349,7 +337,6 @@ public class MainMenuController implements Initializable {
             }, 500);
         });
     }
-
 
     public void embedItems() {
         int column = 0;
@@ -388,7 +375,7 @@ public class MainMenuController implements Initializable {
     public void cancelButton() {
         if (!orderPanel.isVisible() && !cartPane.isVisible()) {
             System.out.println("True, they are both hidden");
-            cart.removeAll();
+            cartItemDaoImpl.deleteAllByCartId(currentUser.getCartId());
 
             try {
                 Parent newRoot = FXMLLoader.load(getClass().getResource("StartUp.fxml"));
@@ -399,10 +386,8 @@ public class MainMenuController implements Initializable {
                 fadeOut.setFromValue(1.0);
                 fadeOut.setToValue(0.0);
                 fadeOut.setOnFinished(e -> {
-
                     rootStackPane.getChildren().remove(currentRoot);
                     rootStackPane.getChildren().add(newRoot);
-
                 });
 
                 SoundManager.playRemove();
@@ -418,16 +403,15 @@ public class MainMenuController implements Initializable {
             orderPanel.setVisible(false);
         }
     }
-private void setChosenFood(Food food){
 
+    private void setChosenFood(Food food) {
         chosenFood = food;
         confirmPanelItemname.setText(chosenFood.getName());
         orderPanelItemPrice.setText("PHP " + chosenFood.getPrice());
         confirmPanelImg.setImage(new Image(getClass().getResourceAsStream(chosenFood.getImgSrc())));
     }
 
-
-    public void embedCategories(){
+    public void embedCategories() {
         int row = 1;
         int column = 0;
 
@@ -439,7 +423,6 @@ private void setChosenFood(Food food){
 
                 AnchorPane anchorPane = fxmlLoader.load();
 
-
                 ItemCategoryController itemController = fxmlLoader.getController();
                 itemController.setData(categories.get(i), myCategoryListener);
 
@@ -448,53 +431,37 @@ private void setChosenFood(Food food){
                     row++;
                 }
 
-
                 categoryGrid.add(anchorPane, column++, row);
                 categoryGrid.setMinWidth(Region.USE_COMPUTED_SIZE);
                 categoryGrid.setPrefWidth(Region.USE_COMPUTED_SIZE);
                 categoryGrid.setMaxWidth(Region.USE_PREF_SIZE);
 
-
                 categoryGrid.setMinHeight(Region.USE_COMPUTED_SIZE);
                 categoryGrid.setPrefHeight(Region.USE_COMPUTED_SIZE);
                 categoryGrid.setMaxHeight(Region.USE_PREF_SIZE);
                 if (i == 0) {
-                    // No top margin for the first item
                     GridPane.setMargin(anchorPane, new Insets(0, 10, 10, 10));
                 } else {
-                    // Standard margin for all other items
                     GridPane.setMargin(anchorPane, new Insets(10));
                 }
-
-
-
             }
-        }catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
-
         }
-
     }
 
-    public List<Food> getItemsByCategory(String category){
+    public List<Food> getItemsByCategory(String category) {
         List<Food> itemByCategory = new ArrayList<>();
-        if(category.equals("All Time Favourites")){
+        int categoryId = foodCategoryDao.getCategoryIdByName(category);
+        if (category.equals("All Time Favourites")) {
             return foods;
         }
-        for(Food food: foods){
-
-            if(food.getCategory().toLowerCase().equals(category.toLowerCase())){
-//                System.out.println("This is for debugging: " + food.getCategory() + " " + category);
-
-                itemByCategory.add(food);
-            }
-        }
-
+        // Gets all food items by category_id
+        itemByCategory.addAll(foodDaoImpl.getAllFoodByCategoryId(categoryId));
         return itemByCategory;
-
     }
 
-    public void embedCategoricalItems(){
+    public void embedCategoricalItems() {
         int column = 0;
         int row = 1;
         try {
@@ -526,18 +493,21 @@ private void setChosenFood(Food food){
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        foods = MenuItem.getInstance().getFoods();
-        categories = Categories.getInstance().getCategories();
-        cart = Cart.getInstance();
+        currentUser = CurrentUser.getInstance();
+        menuItemDao = new MenuItemDaoImpl();
+        cartDaoImpl = new CartDaoImpl(); // Initialize CartDaoImpl
+        foodCategoryDao = new FoodCategoryDaoImpl(); // Initialize FoodCategoryDaoImpl
+        foodDaoImpl = new FoodDaoImpl();
+        cartItemDaoImpl = new CartItemDaoImpl();
 
-        itemsLabel.setText(String.valueOf(cart.getCartItems().size()) + " item/s in the cart");
+        foods = menuItemDao.getAvailableFoods();
+        categories = foodCategoryDao.findAll();
 
+        itemsLabel.setText(cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()).size() + " item/s in the cart");
 
         myItemListener = new MyItemListener() {
             @Override
@@ -551,29 +521,29 @@ private void setChosenFood(Food food){
             }
         };
 
-    myCategoryListener = new MyCategoryListener() {
-        @Override
-        public void onclickListener(FoodCategory foodCategory) {
-            mainHeader.setText(foodCategory.getName());
-            grid.getChildren().clear();
-            itemByCategory.clear();
-            itemByCategory.addAll(getItemsByCategory(foodCategory.getName()));
-            embedCategoricalItems();
-        }
-    };
+        myCategoryListener = new MyCategoryListener() {
+            @Override
+            public void onclickListener(FoodCategory foodCategory) {
+                mainHeader.setText(foodCategory.getName());
+                grid.getChildren().clear();
+                itemByCategory.clear();
+                itemByCategory.addAll(getItemsByCategory(foodCategory.getName()));
+                embedCategoricalItems();
+            }
+        };
 
-    myCartItemListener = new MyCartItemListener() {
-        @Override
-        public void onRemoveItem(Food food) {
-            cart.removeItem(food);
-            itemsLabel.setText(String.valueOf(cart.getCartItems().size()) + " item/s in the cart");
-            SoundManager.playRemove();
-            showCart();
+        myCartItemListener = new MyCartItemListener() {
+            @Override
+            public void onRemoveItem(Food food) {
+//                cartDaoImpl.delete(food.getFoodId()); // Remove from database
+                cartItemDaoImpl.delete(cartItemDaoImpl.getCartIdByFoodId(food.getFoodId()));
+                itemsLabel.setText(cartDaoImpl.findAll().size() + " item/s in the cart");
+                SoundManager.playRemove();
+                showCart();
+            }
+        };
 
-        }
-    };
         embedItems();
         embedCategories();
     }
-
 }

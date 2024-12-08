@@ -19,8 +19,10 @@ import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.example.softfun_funsoft.DaoImpl.CartDaoImpl;
 import org.example.softfun_funsoft.DaoImpl.UserDaoImpl;
 import org.example.softfun_funsoft.lang.LangCheck;
+import org.example.softfun_funsoft.model.Cart;
 import org.example.softfun_funsoft.model.User;
 import org.example.softfun_funsoft.singleton.CurrentUser;
 import org.example.softfun_funsoft.utils.SoundManager;
@@ -113,6 +115,7 @@ public class StartUpCont extends Application implements Initializable {
 
      @FXML
      public void handleStartButton(ActionEvent event) throws IOException {
+         generateId();
          System.out.println("Start button pressed");
 
          Parent newRoot = FXMLLoader.load(getClass().getResource("DineInOrTakeout.fxml"));
@@ -132,15 +135,23 @@ public class StartUpCont extends Application implements Initializable {
      }
      public void generateId(){
          UserDaoImpl userDao = new UserDaoImpl();
+         CartDaoImpl cartDao = new CartDaoImpl();
          CurrentUser currentUser = CurrentUser.getInstance();
          User user = new User();
+         Cart cart = new Cart();
          user.setUserId("U" + System.currentTimeMillis());
+         cart.setCartId((int) (System.currentTimeMillis() % Integer.MAX_VALUE));
+         cart.setUserId(user.getUserId());
+         currentUser.setCartId(cart.getCartId());
          currentUser.setUserId(user.getUserId());
+
+         System.out.println("cart id: " + cart.getCartId());
          userDao.save(user);
+         cartDao.save(cart);
+
      }
 
      public void initialize(URL url, ResourceBundle resourceBundle) {
-         generateId();
 
 
          javafx.animation.PauseTransition delay = new javafx.animation.PauseTransition(Duration.seconds(1)); // 2-second delay

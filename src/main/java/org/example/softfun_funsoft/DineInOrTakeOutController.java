@@ -57,19 +57,18 @@ public class DineInOrTakeOutController {
 
     public void initialize(){
         currentUser = CurrentUser.getInstance();
-        ordersDao = new OrdersDaoImpl();
         SoundManager.playSelectPlaceSound();//Select a place to Eat
     }
 
 
     public void dineIn() {
-
+        currentUser.setDineIn(true);
         SoundManager.playProceedMenuSound();//Proceed to Menu
         proceedToMainMenu();
     }
 
     public void takeOut() {
-
+        currentUser.setDineIn(false);
         SoundManager.playProceedMenuSound();//Proceed to Menu
         proceedToMainMenu();
     }
