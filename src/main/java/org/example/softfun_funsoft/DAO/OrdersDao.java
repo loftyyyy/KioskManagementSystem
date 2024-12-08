@@ -9,4 +9,5 @@ public interface OrdersDao {
     List<Orders> findAll();
     void update(Orders order);
     void delete(int orderId);
+    List<Orders> findByUserId(String userId);
 }

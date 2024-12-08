@@ -103,4 +103,30 @@ public class OrdersDaoImpl implements OrdersDao {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public List<Orders> findByUserId(String userId) {
+        List<Orders> orders = new ArrayList<>();
+        String sql = "SELECT * FROM Orders WHERE user_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Orders order = new Orders();
+                order.setOrderId(rs.getInt("order_id"));
+                order.setUserId(rs.getString("user_id"));
+                order.setOrderDate(rs.getTimestamp("order_date"));
+                order.setTotalAmount(rs.getDouble("total_amount"));
+                order.setPaymentType(rs.getString("payment_type"));
+                order.setDineIn(rs.getBoolean("is_dine_in"));
+                order.setCreatedAt(rs.getTimestamp("created_at"));
+                order.setUpdatedAt(rs.getTimestamp("updated_at"));
+                orders.add(order);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
 }
