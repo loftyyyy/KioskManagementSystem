@@ -58,8 +58,6 @@ public class CartDaoImpl implements CartDao {
                 Cart cart = new Cart();
                 cart.setCartId(rs.getInt("cart_id"));
                 cart.setUserId(rs.getString("user_id"));
-                cart.setFoodId(rs.getInt("food_id"));
-                cart.setQuantity(rs.getInt("quantity"));
                 cart.setCreatedAt(rs.getTimestamp("created_at"));
                 cart.setUpdatedAt(rs.getTimestamp("updated_at"));
                 carts.add(cart);
@@ -107,7 +105,7 @@ public class CartDaoImpl implements CartDao {
 
     public List<Food> getAllFoodsFromCart(String userId) {
         String sql = "SELECT f.food_id, f.name, f.price, f.category_id, f.img_src, f.stock, f.created_at, f.updated_at " +
-                "FROM cart c " +
+                "FROM cartitems c " +
                 "JOIN Foods f ON c.food_id = f.food_id " +
                 "WHERE c.user_id = ?";
         List<Food> foods = new ArrayList<>();

@@ -537,7 +537,7 @@ public class MainMenuController implements Initializable {
             public void onRemoveItem(Food food) {
 //                cartDaoImpl.delete(food.getFoodId()); // Remove from database
                 cartItemDaoImpl.delete(cartItemDaoImpl.getCartIdByFoodId(food.getFoodId()));
-                itemsLabel.setText(cartDaoImpl.findAll().size() + " item/s in the cart");
+                itemsLabel.setText(cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()).size() + " item/s in the cart");
                 SoundManager.playRemove();
                 showCart();
             }

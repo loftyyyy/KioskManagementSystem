@@ -40,21 +40,23 @@ public class CartItemController {
 
     public void setData(Food food, MyCartItemListener myCartItemListener) {
         //TODO: Fix this error here
-        this.cartItem = cartItem;
         this.myCartItemListener = myCartItemListener;
         this.cartItemDaoImpl = new CartItemDaoImpl(); // Initialize CartItemDaoImpl
         this.foodDaoImpl = new FoodDaoImpl(); // Initialize FoodDaoImpl
+        CartItem currentCartItem = cartItemDaoImpl.getCartItemByFoodId(food.getFoodId());
+
+        //Get CardItemIdByFoodId
 //        number = cartItemDaoImpl.findAll().indexOf(cartItem) + 1; // Use CartItemDaoImpl to get the index
-        food = foodDaoImpl.findById(cartItem.getFoodId()); // Assuming you have a method to get Food by ID
+//        food = foodDaoImpl.findById(cartItem.getFoodId()); // Assuming you have a method to get Food by ID
         itemName.setText(food.getName());
         itemNumber.setText(String.valueOf(number));
-        itemQuantity.setText(String.valueOf(cartItem.getQuantity()));
-        itemPrice.setText("PHP " + cartItem.getPrice());
-        totalPrice.setText("PHP " + (cartItem.getPrice() * cartItem.getQuantity()));
+        itemQuantity.setText(String.valueOf(currentCartItem.getQuantity()));
+        itemPrice.setText("PHP " + food.getPrice());
+        totalPrice.setText("PHP " + (food.getPrice() * currentCartItem.getQuantity()));
         img.setImage(new javafx.scene.image.Image(getClass().getResourceAsStream(food.getImgSrc())));
 
-//        removeBTN.setOnAction(e -> {
-//            myCartItemListener.onRemoveItem(food);
-//        });
+        removeBTN.setOnAction(e -> {
+            myCartItemListener.onRemoveItem(food);
+        });
     }
 }

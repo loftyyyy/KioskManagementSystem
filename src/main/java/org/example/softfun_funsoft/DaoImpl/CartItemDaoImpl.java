@@ -71,7 +71,7 @@ public class CartItemDaoImpl implements CartItemDao {
 
     @Override
     public void update(CartItem cartItem) {
-        String sql = "UPDATE Cart_Items SET cart_id = ?, food_id = ?, quantity = ?, price = ? WHERE cart_item_id = ?";
+        String sql = "UPDATE CartItems SET cart_id = ?, food_id = ?, quantity = ?, price = ? WHERE cart_item_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, cartItem.getCartId());
@@ -87,7 +87,7 @@ public class CartItemDaoImpl implements CartItemDao {
 
     @Override
     public void delete(int cartItemId) {
-        String sql = "DELETE FROM Cart_Items WHERE cart_item_id = ?";
+        String sql = "DELETE FROM cartitems WHERE cart_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, cartItemId);
