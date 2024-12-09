@@ -521,6 +521,7 @@ public class MainMenuController implements Initializable {
             }
         };
 
+
         myCategoryListener = new MyCategoryListener() {
             @Override
             public void onclickListener(FoodCategory foodCategory) {
@@ -535,7 +536,6 @@ public class MainMenuController implements Initializable {
         myCartItemListener = new MyCartItemListener() {
             @Override
             public void onRemoveItem(Food food) {
-//                cartDaoImpl.delete(food.getFoodId()); // Remove from database
                 cartItemDaoImpl.delete(cartItemDaoImpl.getCartIdByFoodId(food.getFoodId()));
                 itemsLabel.setText(cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()).size() + " item/s in the cart");
                 SoundManager.playRemove();
