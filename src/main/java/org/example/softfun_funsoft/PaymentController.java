@@ -34,30 +34,24 @@ public class PaymentController implements Initializable {
 
     private MediaPlayer soundPlayer;
 
+    CurrentUser currentUser;
 
     public void cardPayment() {
-        CurrentUser currentUser = CurrentUser.getInstance();
+        currentUser.setPaymentType("Card");
         proceedToPaymentPage();
 
     }
 
     public void cashPayment() {
-        CurrentUser currentUser = CurrentUser.getInstance();
-        Order order = Order.getInstance();
-        order.setOrderID(new Random()
-                .ints('A', 'Z' + 1)
-                .limit(10)
-                .mapToObj(i -> String.valueOf((char) i))
-                .collect(Collectors.joining()));
-        order.setPaymentType("Cash");
+        currentUser.setPaymentType("Cash");
         proceedToPaymentPage();
 
 
     }
 
     private void proceedToPaymentPage(){
-        Order order = Order.getInstance();
-        if(order.getPaymentType().equals("Card")){
+
+        if(currentUser.getPaymentType().equals("Card")){
             try {
                 Parent newRoot = FXMLLoader.load(getClass().getResource("CardPayment.fxml"));
 
@@ -110,6 +104,7 @@ public class PaymentController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        currentUser = CurrentUser.getInstance();
         SoundManager.playPaymentType();
 
     }

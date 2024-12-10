@@ -7,6 +7,7 @@ public class CurrentUser {
     private int cartId;
     private Boolean dineIn;
 
+    private String paymentType;
     private CurrentUser() {
     }
 
@@ -38,4 +39,13 @@ public class CurrentUser {
     public void setCartId(int cartId) {
         this.cartId = cartId;
     }
+
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
+    }
 }
+
