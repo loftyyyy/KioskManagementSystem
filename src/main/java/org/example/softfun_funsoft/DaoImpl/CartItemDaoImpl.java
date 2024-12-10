@@ -171,24 +171,39 @@ public class CartItemDaoImpl implements CartItemDao {
     }
 
     public List<CartItem> findAllByCartId(int cartId) {
-    List<CartItem> cartItems = new ArrayList<>();
-    String sql = "SELECT * FROM CartItems WHERE cart_id = ?";
-    try (Connection conn = DatabaseConnection.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
-        stmt.setInt(1, cartId);
-        ResultSet rs = stmt.executeQuery();
-        while (rs.next()) {
-            CartItem cartItem = new CartItem();
-            cartItem.setCartItemId(rs.getInt("cart_item_id"));
-            cartItem.setCartId(rs.getInt("cart_id"));
-            cartItem.setFoodId(rs.getInt("food_id"));
-            cartItem.setQuantity(rs.getInt("quantity"));
-            cartItem.setPrice(rs.getDouble("price"));
-            cartItems.add(cartItem);
+        List<CartItem> cartItems = new ArrayList<>();
+        String sql = "SELECT * FROM CartItems WHERE cart_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, cartId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                CartItem cartItem = new CartItem();
+                cartItem.setCartItemId(rs.getInt("cart_item_id"));
+                cartItem.setCartId(rs.getInt("cart_id"));
+                cartItem.setFoodId(rs.getInt("food_id"));
+                cartItem.setQuantity(rs.getInt("quantity"));
+                cartItem.setPrice(rs.getDouble("price"));
+                cartItems.add(cartItem);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
+        return cartItems;
     }
-    return cartItems;
-}
+
+    public Double getTotalAmountByCartId(int cartId) {
+        String sql = "SELECT SUM(price * quantity) AS total_amount FROM CartItems WHERE cart_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, cartId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("total_amount");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
 }

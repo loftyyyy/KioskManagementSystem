@@ -127,4 +127,7 @@ public class FoodDaoImpl implements org.example.softfun_funsoft.DAO.FoodDao {
         }
         return foods;
     }
+
+    //TODO: Implement this functionality.
+    public void getFoodNameBy
 }
