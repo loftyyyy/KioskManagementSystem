@@ -12,7 +12,8 @@ import java.util.List;
 public class CartItemDaoImpl implements CartItemDao {
     @Override
     public void save(CartItem cartItem) {
-        String sql = "INSERT INTO CartItems (cart_id, food_id, quantity, price) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO CartItems (cart_id, food_id, quantity, price) VALUES (?, ?, ?, ?) " +
+                     "ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, cartItem.getCartId());
@@ -24,7 +25,6 @@ public class CartItemDaoImpl implements CartItemDao {
             e.printStackTrace();
         }
     }
-
     @Override
     public CartItem findById(int cartItemId) {
         String sql = "SELECT * FROM Cart_Items WHERE cart_item_id = ?";
@@ -50,7 +50,7 @@ public class CartItemDaoImpl implements CartItemDao {
     @Override
     public List<CartItem> findAll() {
         List<CartItem> cartItems = new ArrayList<>();
-        String sql = "SELECT * FROM Cart_Items";
+        String sql = "SELECT * FROM CartItems";
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -87,7 +87,7 @@ public class CartItemDaoImpl implements CartItemDao {
 
     @Override
     public void delete(int cartItemId) {
-        String sql = "DELETE FROM cartitems WHERE cart_id = ?";
+        String sql = "DELETE FROM cartitems WHERE cart_item_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, cartItemId);
@@ -169,4 +169,26 @@ public class CartItemDaoImpl implements CartItemDao {
             e.printStackTrace();
         }
     }
+
+    public List<CartItem> findAllByCartId(int cartId) {
+    List<CartItem> cartItems = new ArrayList<>();
+    String sql = "SELECT * FROM CartItems WHERE cart_id = ?";
+    try (Connection conn = DatabaseConnection.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setInt(1, cartId);
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            CartItem cartItem = new CartItem();
+            cartItem.setCartItemId(rs.getInt("cart_item_id"));
+            cartItem.setCartId(rs.getInt("cart_id"));
+            cartItem.setFoodId(rs.getInt("food_id"));
+            cartItem.setQuantity(rs.getInt("quantity"));
+            cartItem.setPrice(rs.getDouble("price"));
+            cartItems.add(cartItem);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return cartItems;
+}
 }

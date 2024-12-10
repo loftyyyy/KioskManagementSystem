@@ -183,16 +183,20 @@ public class MainMenuController implements Initializable {
     }
 
     public void setAddToCart() {
-        CartItem cartItem = new CartItem();
-        cartItem.setCartId(currentUser.getCartId());
-        cartItem.setFoodId(chosenFood.getFoodId());
-        System.out.println(currentUser.getCartId());
-        cartItem.setQuantity(currentQuantity);
-        cartItem.setPrice(chosenFood.getPrice());
-        cartItemDaoImpl.save(cartItem);
-
-
-
+        CartItem existingCartItem = cartItemDaoImpl.getCartItemByFoodId(chosenFood.getFoodId());
+        if (existingCartItem != null && existingCartItem.getCartId() == currentUser.getCartId()) {
+            // Item exists in the cart, update the quantity
+            existingCartItem.setQuantity(existingCartItem.getQuantity() + currentQuantity);
+            cartItemDaoImpl.update(existingCartItem);
+        } else {
+            // Item does not exist in the cart, add it
+            CartItem newCartItem = new CartItem();
+            newCartItem.setCartId(currentUser.getCartId());
+            newCartItem.setFoodId(chosenFood.getFoodId());
+            newCartItem.setQuantity(currentQuantity);
+            newCartItem.setPrice(chosenFood.getPrice());
+            cartItemDaoImpl.save(newCartItem);
+        }
 
         orderPanel.setVisible(false);
         addAnchorPane.setVisible(false);
@@ -200,7 +204,6 @@ public class MainMenuController implements Initializable {
         itemsLabel.setText(cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()).size() + " item/s in the cart");
         SoundManager.playClick();
     }
-
     public void proceedToCheckoutAction() {
 
         try {
@@ -533,16 +536,18 @@ public class MainMenuController implements Initializable {
             }
         };
 
-        myCartItemListener = new MyCartItemListener() {
-            @Override
-            public void onRemoveItem(Food food) {
-                cartItemDaoImpl.delete(cartItemDaoImpl.getCartIdByFoodId(food.getFoodId()));
-                itemsLabel.setText(cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()).size() + " item/s in the cart");
-                SoundManager.playRemove();
-                showCart();
-            }
-        };
-
+myCartItemListener = new MyCartItemListener() {
+    @Override
+    public void onRemoveItem(Food food) {
+        CartItem cartItem = cartItemDaoImpl.getCartItemByFoodId(food.getFoodId());
+        if (cartItem != null) {
+            cartItemDaoImpl.delete(cartItem.getCartItemId());
+            itemsLabel.setText(cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()).size() + " item/s in the cart");
+            SoundManager.playRemove();
+            showCart();
+        }
+    }
+};
         embedItems();
         embedCategories();
     }
