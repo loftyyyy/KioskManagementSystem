@@ -129,4 +129,20 @@ public class OrdersDaoImpl implements OrdersDao {
         }
         return orders;
     }
+
+
+    public int getOrderIdByUserId(String userId) {
+        String sql = "SELECT order_id FROM Orders WHERE user_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("order_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }

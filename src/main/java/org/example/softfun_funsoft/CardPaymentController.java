@@ -17,11 +17,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.example.softfun_funsoft.DaoImpl.CartItemDaoImpl;
-import org.example.softfun_funsoft.DaoImpl.FoodDaoImpl;
-import org.example.softfun_funsoft.DaoImpl.OrdersDaoImpl;
-import org.example.softfun_funsoft.model.CartItem;
-import org.example.softfun_funsoft.model.Orders;
+import org.example.softfun_funsoft.DaoImpl.*;
+import org.example.softfun_funsoft.model.*;
 import org.example.softfun_funsoft.singleton.CardReceiptData;
 import org.example.softfun_funsoft.singleton.CurrentUser;
 import org.example.softfun_funsoft.utils.SoundManager;
@@ -32,7 +29,6 @@ import com.stripe.model.Charge;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import org.example.softfun_funsoft.model.Food;
 import org.example.softfun_funsoft.payment.Card;
 
 import java.io.IOException;
@@ -112,6 +108,13 @@ public class CardPaymentController implements Initializable {
     private Double totalFoodAmount;
     private Double taxAmount;
 
+    private PaymentsDaoImpl paymentsDao;
+    private CardPaymentsDaoImpl cardPaymentsDao;
+    private ReceiptsDaoImpl receiptsDao;
+    private String cardType;
+
+    private String transactionID;
+    private String cardHolderName;
 
     public void submit() {
         if (emailField.getText().isEmpty() || cardNumberField.getText().isEmpty() || cardHolderNameField.getText().isEmpty() || cardMMYYField.getText().isEmpty() || cardCVCField.getText().isEmpty() || zipField.getText().isEmpty() || regionComboBox.getValue() == null) {
@@ -134,13 +137,14 @@ public class CardPaymentController implements Initializable {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                     String formattedDateTime = dateTime.format(formatter);
                     System.out.println("Payment Date and Time: " + formattedDateTime);
+
                     receiptLink = jsonObject.getString("receipt_url");
-                    System.out.println(metadata.getString("cardholder_name"));
+                    cardHolderName = metadata.getString("cardholder_name");
 
-                    String cardType = charge.getPaymentMethodDetails().getCard().getBrand();
+                    cardType = charge.getPaymentMethodDetails().getCard().getBrand();
 
 
-//                    order.setOrderID(jsonObject.getString("id"));
+                    transactionID = jsonObject.getString("id");
 
                     Platform.runLater(() -> {
                         successPane.setVisible(true);
@@ -182,13 +186,46 @@ public class CardPaymentController implements Initializable {
         order.setDineIn(currentUser.getDineIn());
         order.setPaymentType(currentUser.getPaymentType());
         order.setTotalAmount(totalFoodAmount + taxAmount);
-
         ordersDao.save(order);
 
     }
 
+    public void createPayment(){
+        Payments payments = new Payments();
+        payments.setOrderId(ordersDao.getOrderIdByUserId(currentUser.getUserId()));
+        payments.setAmount(totalFoodAmount + taxAmount);
+        paymentsDao.save(payments);
+
+
+    }
+
+    public void createCardPayment(){
+        CardPayments cardPayments = new CardPayments();
+        cardPayments.setPaymentId(paymentsDao.getPaymentIdByOrderId(ordersDao.getOrderIdByUserId(currentUser.getUserId())));
+        cardPayments.setCardType(cardType);
+        cardPayments.setCardHolderName(cardHolderName);
+        cardPayments.setTransactionId(transactionID);
+        cardPaymentsDao.save(cardPayments);
+
+
+
+    }
+
+    public void createReceipt(){
+        Receipts receipts = new Receipts();
+        receipts.setOrderId(ordersDao.getOrderIdByUserId(currentUser.getUserId()));
+        receipts.setReceiptUrl(receiptLink);
+        receiptsDao.save(receipts);
+
+
+
+    }
 
     public void setContinueBTN() throws IOException {
+
+        createCardPayment();
+        createReceipt();
+
         Parent newRoot = FXMLLoader.load(getClass().getResource("Receipt.fxml"));
 
         Node currentRoot = rootStackPane.getChildren().get(rootStackPane.getChildren().size() - 1);
@@ -202,10 +239,7 @@ public class CardPaymentController implements Initializable {
             rootStackPane.getChildren().add(newRoot);
 
         });
-
-
         fadeOut.play();
-
     }
     public void setCancelBTN() throws IOException {
         Parent newRoot = FXMLLoader.load(getClass().getResource("MainMenu.fxml"));
@@ -248,7 +282,12 @@ public class CardPaymentController implements Initializable {
         currentUser = CurrentUser.getInstance();
         cartItemDao = new CartItemDaoImpl();
         ordersDao = new OrdersDaoImpl();
+        paymentsDao = new PaymentsDaoImpl();
+        cardPaymentsDao = new CardPaymentsDaoImpl();
+        receiptsDao = new ReceiptsDaoImpl();
+
         createOrder();
+        createPayment();
 
         regionComboBox.setValue("Philippines");
 

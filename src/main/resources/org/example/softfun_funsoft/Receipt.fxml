@@ -102,7 +102,7 @@
                         <Font name="Monospaced Regular" size="15.0" />
                      </font>
                   </Label>
-                  <Label alignment="CENTER_RIGHT" layoutX="237.0" layoutY="564.0" prefHeight="34.0" prefWidth="186.0" text="PHP 36.0">
+                  <Label fx:id="taxLabel" alignment="CENTER_RIGHT" layoutX="237.0" layoutY="564.0" prefHeight="34.0" prefWidth="186.0" text="PHP 36.0">
                      <font>
                         <Font name="Monospaced Regular" size="15.0" />
                      </font>

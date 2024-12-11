@@ -99,4 +99,27 @@ public class CardPaymentsDaoImpl implements CardPaymentsDao {
             e.printStackTrace();
         }
     }
+
+    public CardPayments findByPaymentId(int paymentId) {
+        String sql = "SELECT * FROM CardPayments WHERE payment_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, paymentId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                CardPayments cardPayment = new CardPayments();
+                cardPayment.setCardPaymentId(rs.getInt("card_payment_id"));
+                cardPayment.setPaymentId(rs.getInt("payment_id"));
+                cardPayment.setCardType(rs.getString("card_type"));
+                cardPayment.setCardHolderName(rs.getString("card_holder_name"));
+                cardPayment.setTransactionId(rs.getString("transaction_id"));
+                cardPayment.setCreatedAt(rs.getTimestamp("created_at"));
+                cardPayment.setUpdatedAt(rs.getTimestamp("updated_at"));
+                return cardPayment;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

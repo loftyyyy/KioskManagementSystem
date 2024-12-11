@@ -93,4 +93,19 @@ public class PaymentsDaoImpl implements PaymentsDao {
             e.printStackTrace();
         }
     }
+
+    public int getPaymentIdByOrderId(int orderId) {
+        String sql = "SELECT payment_id FROM Payments WHERE order_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, orderId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("payment_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }
