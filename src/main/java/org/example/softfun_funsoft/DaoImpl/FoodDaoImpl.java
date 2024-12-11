@@ -129,5 +129,27 @@ public class FoodDaoImpl implements org.example.softfun_funsoft.DAO.FoodDao {
     }
 
     //TODO: Implement this functionality.
-    public void getFoodNameBy
+    public String getFoodNameByFoodId(int id){
+        String sql = "SELECT name FROM foods WHERE food_id = ?";
+        try(Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement psmt = conn.prepareStatement(sql)
+        ) {
+            String name = "";
+
+            psmt.setInt(1,id);
+            ResultSet rs = psmt.executeQuery();
+
+            while(rs.next()){
+                name = rs.getString("name");
+            }
+
+            return name;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return "";
+
+    }
 }

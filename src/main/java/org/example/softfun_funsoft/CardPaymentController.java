@@ -18,6 +18,7 @@ import javafx.scene.web.WebEngine;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.example.softfun_funsoft.DaoImpl.CartItemDaoImpl;
+import org.example.softfun_funsoft.DaoImpl.FoodDaoImpl;
 import org.example.softfun_funsoft.DaoImpl.OrdersDaoImpl;
 import org.example.softfun_funsoft.model.CartItem;
 import org.example.softfun_funsoft.model.Orders;
@@ -106,7 +107,11 @@ public class CardPaymentController implements Initializable {
     private CurrentUser currentUser;
     private CartItemDaoImpl cartItemDao;
 
-    //TODO: implement another scene for the receipt
+    private FoodDaoImpl foodDao;
+
+    private Double totalFoodAmount;
+    private Double taxAmount;
+
 
     public void submit() {
         if (emailField.getText().isEmpty() || cardNumberField.getText().isEmpty() || cardHolderNameField.getText().isEmpty() || cardMMYYField.getText().isEmpty() || cardCVCField.getText().isEmpty() || zipField.getText().isEmpty() || regionComboBox.getValue() == null) {
@@ -114,12 +119,11 @@ public class CardPaymentController implements Initializable {
         } else {
             Platform.runLater(() -> progressPane.setVisible(true));
             Card cardPayment = new Card();
-            Order order = Order.getInstance();
-            CardReceiptData cardReceiptData = CardReceiptData.getInstance();
+//            CardReceiptData cardReceiptData = CardReceiptData.getInstance();
             new Thread(() -> {
                 try {
                     System.out.println(cardNumberField.getText().replaceAll("\\s+", ""));
-                    Charge charge = cardPayment.createCharge("tok_visa", (int) order.getGrandTotal(), emailField.getText(), cardHolderNameField.getText(), cardNumberField.getText().replaceAll("\\s+", ""), cardCVCField.getText(), cardMMYYField.getText(), regionComboBox.getValue(), zipField.getText());
+                    Charge charge = cardPayment.createCharge("tok_visa", (int) (totalFoodAmount + taxAmount), emailField.getText(), cardHolderNameField.getText(), cardNumberField.getText().replaceAll("\\s+", ""), cardCVCField.getText(), cardMMYYField.getText(), regionComboBox.getValue(), zipField.getText());
                     String chargeJson = charge.toJson();
 
                     JSONObject jsonObject = new JSONObject(chargeJson);
@@ -135,11 +139,6 @@ public class CardPaymentController implements Initializable {
 
                     String cardType = charge.getPaymentMethodDetails().getCard().getBrand();
 
-                    cardReceiptData.setReceiptId(jsonObject.getString("id"));
-                    cardReceiptData.setReceiptUrl(receiptLink);
-                    cardReceiptData.setCardHolderName(metadata.getString("cardholder_name"));
-                    cardReceiptData.setPaymentDateTime(formattedDateTime);
-                    cardReceiptData.setCardType(cardType);
 
 //                    order.setOrderID(jsonObject.getString("id"));
 
@@ -176,12 +175,13 @@ public class CardPaymentController implements Initializable {
         }
     }
     public void createOrder(){
+        totalFoodAmount = cartItemDao.getTotalAmountByCartId(currentUser.getCartId());
+        taxAmount = totalFoodAmount * 0.05;
         Orders order = new Orders();
-
         order.setUserId(currentUser.getUserId());
         order.setDineIn(currentUser.getDineIn());
-        order.setTotalAmount();
-
+        order.setPaymentType(currentUser.getPaymentType());
+        order.setTotalAmount(totalFoodAmount + taxAmount);
 
         ordersDao.save(order);
 
@@ -237,17 +237,22 @@ public class CardPaymentController implements Initializable {
     private String generateReceiptLayout() {
         StringBuilder receipt = new StringBuilder();
         for (CartItem food : cartItemDao.findAllByCartId(currentUser.getCartId())) {
-            receipt.append(String.format("%s x%d - PHP %.2f\n", food.getName(), food.getQuantity(), food.getPrice() * food.getQuantity()));
+            receipt.append(String.format("%s x%d - PHP %.2f\n", foodDao.getFoodNameByFoodId(food.getFoodId()), food.getQuantity(), food.getPrice() * food.getQuantity()));
         }
         return receipt.toString();
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        foodDao = new FoodDaoImpl();
         currentUser = CurrentUser.getInstance();
         cartItemDao = new CartItemDaoImpl();
         ordersDao = new OrdersDaoImpl();
+        createOrder();
+
         regionComboBox.setValue("Philippines");
+
+
 
         regionComboBox.getItems().addAll(
                 Arrays.stream(Locale.getISOCountries())
@@ -258,6 +263,6 @@ public class CardPaymentController implements Initializable {
         orderItemsArea.setText(generateReceiptLayout());
         grandTotal.setStyle("-fx-text-fill: green;");
         taxLabel.setText("Tax: PHP " + cartItemDao.getTotalAmountByCartId(currentUser.getCartId()) * 0.05 );
-        grandTotal.setText("Total: PHP " + order.getGrandTotal());
+        grandTotal.setText("Total: PHP " + totalFoodAmount + taxAmount);
     }
 }
