@@ -185,10 +185,13 @@ public class MainMenuController implements Initializable {
     public void setAddToCart() {
         CartItem existingCartItem = cartItemDaoImpl.getCartItemByFoodId(chosenFood.getFoodId());
         if (existingCartItem != null && existingCartItem.getCartId() == currentUser.getCartId()) {
+
             // Item exists in the cart, update the quantity
             existingCartItem.setQuantity(existingCartItem.getQuantity() + currentQuantity);
             cartItemDaoImpl.update(existingCartItem);
+
         } else {
+
             // Item does not exist in the cart, add it
             CartItem newCartItem = new CartItem();
             newCartItem.setCartId(currentUser.getCartId());
@@ -196,13 +199,19 @@ public class MainMenuController implements Initializable {
             newCartItem.setQuantity(currentQuantity);
             newCartItem.setPrice(chosenFood.getPrice());
             cartItemDaoImpl.save(newCartItem);
+
         }
+
+
 
         orderPanel.setVisible(false);
         addAnchorPane.setVisible(false);
         showNotification(chosenFood);
         itemsLabel.setText(cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()).size() + " item/s in the cart");
         SoundManager.playClick();
+
+
+
     }
     public void proceedToCheckoutAction() {
 
@@ -310,6 +319,7 @@ public class MainMenuController implements Initializable {
                     column = 0;
                     row++;
                 }
+
                 grid.add(pane, column++, row);
                 grid.setPrefWidth(Region.USE_COMPUTED_SIZE);
                 grid.setPrefHeight(Region.USE_COMPUTED_SIZE);
@@ -517,6 +527,7 @@ public class MainMenuController implements Initializable {
             public void onclickListener(Food food) {
                 currentQuantity = 1;
                 quantity.setText(String.valueOf(currentQuantity));
+                System.out.println("This is the current quant" + currentQuantity);
                 setChosenFood(food);
                 proceedToCheckoutPanel.setVisible(false);
                 orderPanel.setVisible(true);
@@ -536,18 +547,17 @@ public class MainMenuController implements Initializable {
             }
         };
 
-myCartItemListener = new MyCartItemListener() {
-    @Override
-    public void onRemoveItem(Food food) {
-        CartItem cartItem = cartItemDaoImpl.getCartItemByFoodId(food.getFoodId());
-        if (cartItem != null) {
+    myCartItemListener = new MyCartItemListener() {
+        @Override
+        public void onRemoveItem(Food food) {
+            CartItem cartItem = cartItemDaoImpl.getCartItemByFoodId(food.getFoodId());
             cartItemDaoImpl.delete(cartItem.getCartItemId());
             itemsLabel.setText(cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()).size() + " item/s in the cart");
             SoundManager.playRemove();
             showCart();
         }
-    }
-};
+    };
+
         embedItems();
         embedCategories();
     }

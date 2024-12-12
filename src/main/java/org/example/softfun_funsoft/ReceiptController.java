@@ -61,6 +61,9 @@ public class ReceiptController implements Initializable {
 
     @FXML
     private Label timer;
+
+    @FXML
+    private Label taxLabel;
     private int timeRemaining = 10;
     private Timeline timeline;
     private CurrentUser currentUser;
@@ -73,7 +76,6 @@ public class ReceiptController implements Initializable {
     private CardPaymentsDaoImpl cardPaymentsDao;
     private ReceiptsDaoImpl receiptsDao;
 
-    private Label taxLabel;
     private Double totalAmount;
     private Double taxAmount;
     @Override
@@ -90,6 +92,9 @@ public class ReceiptController implements Initializable {
         receiptsDao = new ReceiptsDaoImpl();
         currentUser = CurrentUser.getInstance();
 
+        totalAmount = cartItemDao.getTotalAmountByCartId(currentUser.getCartId());
+        taxAmount = totalAmount * 0.05;
+
         if(currentUser.getPaymentType().equals("Cash")) {
             paymentType.setText("Payment Type: Cash");
             cardType.setVisible(false);
@@ -101,12 +106,10 @@ public class ReceiptController implements Initializable {
             String formattedDateTime = currentDateTime.format(formatter);
             paymentDate.setText("Payment Date: " + formattedDateTime);
 
-            totalAmount = cartItemDao.getTotalAmountByCartId(currentUser.getCartId());
-            taxAmount = totalAmount * 0.05;
 
-            taxLabel.setText("PHP " +  taxAmount);
-            grandTotal.setText("PHP " + (totalAmount + taxAmount));
-            subTotal.setText("PHP " + totalAmount);
+            taxLabel.setText(String.format("PHP: %.2f", taxAmount));
+            grandTotal.setText(String.format("PHP: %.2f",totalAmount + taxAmount));
+            subTotal.setText(String.format("PHP: %.2f", totalAmount));
             orderType.setText("Order Type: " + (currentUser.getDineIn() ? "Dine In" : "Take out"));
         } else {
             CardPayments cardPayment = cardPaymentsDao.findByPaymentId(paymentsDao.getPaymentIdByOrderId(ordersDao.getOrderIdByUserId(currentUser.getUserId())));
@@ -115,9 +118,9 @@ public class ReceiptController implements Initializable {
             cardHolderName.setText("Card Holder Name: " + cardPayment.getCardHolderName());
             cardType.setText("Card Type: " + cardPayment.getCardType());
             paymentType.setText("Payment Type: Card");
-            taxLabel.setText("PHP " +  taxAmount);
-            grandTotal.setText("PHP " + (totalAmount + taxAmount));
-            subTotal.setText("PHP " + totalAmount);
+            taxLabel.setText(String.format("PHP: %.2f", taxAmount));
+            grandTotal.setText(String.format("PHP: %.2f",totalAmount + taxAmount));
+            subTotal.setText(String.format("PHP: %.2f", totalAmount));
             orderType.setText("Order Type: " + (currentUser.getDineIn() ? "Dine In" : "Take out"));
         }
 

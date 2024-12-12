@@ -301,7 +301,7 @@ public class CardPaymentController implements Initializable {
 
         orderItemsArea.setText(generateReceiptLayout());
         grandTotal.setStyle("-fx-text-fill: green;");
-        taxLabel.setText("Tax: PHP " + cartItemDao.getTotalAmountByCartId(currentUser.getCartId()) * 0.05 );
-        grandTotal.setText("Total: PHP " + totalFoodAmount + taxAmount);
+        taxLabel.setText(String.format("Tax: PHP %.2f", taxAmount));
+        grandTotal.setText(String.format("Total: PHP %.2f",   totalFoodAmount + taxAmount));
     }
 }

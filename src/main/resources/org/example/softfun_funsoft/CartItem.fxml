@@ -31,7 +31,7 @@
             <Font name="Gill Sans MT" size="30.0" />
          </font>
       </Label>
-      <Label fx:id="totalPrice" layoutX="1040.0" layoutY="60.0" prefHeight="68.0" prefWidth="137.0" text="PHP 100" wrapText="true">
+      <Label fx:id="totalPrice" layoutX="1040.0" layoutY="60.0" prefHeight="68.0" prefWidth="213.0" text="PHP 100" wrapText="true">
          <font>
             <Font name="Gill Sans MT" size="30.0" />
          </font>

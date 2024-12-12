@@ -61,6 +61,8 @@ public void setData(Food food, MyCartItemListener myCartItemListener) {
         number++;
     }
 
+    System.out.println(currentCartItem.getQuantity());
+
     itemName.setText(food.getName());
     itemNumber.setText(String.valueOf(number));
     itemQuantity.setText(String.valueOf(currentCartItem.getQuantity()));

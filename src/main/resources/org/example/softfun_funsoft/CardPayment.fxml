@@ -62,12 +62,12 @@
                         <Image url="@../../../pic_resources/Fries%20Border.png" />
                      </image>
                   </ImageView>
-                  <WebView fx:id="webViewLink" layoutY="-2.0" prefHeight="791.0" prefWidth="771.0" visible="false" />
                   <Label fx:id="taxLabel" layoutX="459.0" layoutY="717.0" prefHeight="21.0" prefWidth="238.0" text="Tax:">
                      <font>
                         <Font name="Gill Sans MT" size="18.0" />
                      </font>
                   </Label>
+                  <WebView fx:id="webViewLink" layoutY="-2.0" prefHeight="791.0" prefWidth="771.0" visible="false" />
                </children>
             </AnchorPane>
             <AnchorPane layoutX="802.0" layoutY="37.0" prefHeight="702.0" prefWidth="706.0" style="-fx-background-color: transparent;">
