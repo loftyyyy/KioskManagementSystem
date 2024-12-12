@@ -99,10 +99,12 @@ public class CartItemDaoImpl implements CartItemDao {
 
     public List<Food> findFoodsByCartId(int cartId) {
     List<Food> foods = new ArrayList<>();
-    String sql = "SELECT f.food_id, f.name, f.price, f.category_id, f.img_src, f.stock, f.created_at, f.updated_at " +
-                 "FROM CartItems ci " +
-                 "JOIN foods f ON ci.food_id = f.food_id " +
-                 "WHERE ci.cart_id = ?";
+//    String sql = "SELECT f.food_id, f.name, f.price, f.category_id, f.img_src, f.stock, f.created_at, f.updated_at " +
+//                 "FROM CartItems ci " +
+//                 "JOIN foods f ON ci.food_id = f.food_id " +
+//                 "WHERE ci.cart_id = ?";
+//        String sql = "SELECT * FROM foods WHERE food_id IN (SELECT food_id FROM CartItems WHERE cart_id = ?)";
+        String sql = "SELECT f.* FROM foods f JOIN CartItems ci ON f.food_id = ci.food_id WHERE ci.cart_id = ? ORDER BY ci.cart_item_id";
     try (Connection conn = DatabaseConnection.getConnection();
          PreparedStatement stmt = conn.prepareStatement(sql)) {
         stmt.setInt(1, cartId);
@@ -138,11 +140,12 @@ public class CartItemDaoImpl implements CartItemDao {
         }
         return -1; // Return -1 if no cartId is found for the given foodId
     }
-    public CartItem getCartItemByFoodId(int foodId) {
-    String sql = "SELECT * FROM CartItems WHERE food_id = ?";
+    public CartItem getCartItemByFoodId(int foodId, int cartId) {
+    String sql = "SELECT * FROM CartItems WHERE food_id = ? AND cart_id = ? ORDER BY food_id";
     try (Connection conn = DatabaseConnection.getConnection();
          PreparedStatement stmt = conn.prepareStatement(sql)) {
         stmt.setInt(1, foodId);
+        stmt.setInt(2, cartId);
         ResultSet rs = stmt.executeQuery();
         if (rs.next()) {
             CartItem cartItem = new CartItem();

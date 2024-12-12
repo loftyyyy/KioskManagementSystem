@@ -183,7 +183,8 @@ public class MainMenuController implements Initializable {
     }
 
     public void setAddToCart() {
-        CartItem existingCartItem = cartItemDaoImpl.getCartItemByFoodId(chosenFood.getFoodId());
+        System.out.println("Current Cart ID: "  + currentUser.getCartId());
+        CartItem existingCartItem = cartItemDaoImpl.getCartItemByFoodId(chosenFood.getFoodId(), currentUser.getCartId());
         if (existingCartItem != null && existingCartItem.getCartId() == currentUser.getCartId()) {
 
             // Item exists in the cart, update the quantity
@@ -193,17 +194,21 @@ public class MainMenuController implements Initializable {
         } else {
 
             // Item does not exist in the cart, add it
+            System.out.println("Creating new CartItem");
             CartItem newCartItem = new CartItem();
             newCartItem.setCartId(currentUser.getCartId());
             newCartItem.setFoodId(chosenFood.getFoodId());
+            System.out.println("This is the current food id: " + chosenFood.getFoodId());
             newCartItem.setQuantity(currentQuantity);
-            newCartItem.setPrice(chosenFood.getPrice());
+            System.out.println("This is the current quantity: " + currentQuantity);
+            newCartItem.setPrice(chosenFood.getPrice() * currentQuantity);
             cartItemDaoImpl.save(newCartItem);
 
         }
 
 
-
+//    CartItem updatedCartItem = cartItemDaoImpl.getCartItemByFoodId(chosenFood.getFoodId());
+//    System.out.println("Updated Quantity: " + updatedCartItem.getQuantity());
         orderPanel.setVisible(false);
         addAnchorPane.setVisible(false);
         showNotification(chosenFood);
@@ -241,9 +246,9 @@ public class MainMenuController implements Initializable {
         try {
             for (Food food : cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()) ){ // Load items from database
 
-                CartItem currentFood = cartItemDaoImpl.getCartItemByFoodId(food.getFoodId());
+                CartItem currentFood = cartItemDaoImpl.getCartItemByFoodId(food.getFoodId(), currentUser.getCartId());
 
-                totalPrice += (currentFood.getPrice() * currentFood.getQuantity());
+                totalPrice += (currentFood.getPrice());
 
                 FXMLLoader fxmlLoader = new FXMLLoader();
                 fxmlLoader.setLocation(getClass().getResource("CartItem.fxml"));
@@ -550,7 +555,7 @@ public class MainMenuController implements Initializable {
     myCartItemListener = new MyCartItemListener() {
         @Override
         public void onRemoveItem(Food food) {
-            CartItem cartItem = cartItemDaoImpl.getCartItemByFoodId(food.getFoodId());
+            CartItem cartItem = cartItemDaoImpl.getCartItemByFoodId(food.getFoodId(),currentUser.getCartId());
             cartItemDaoImpl.delete(cartItem.getCartItemId());
             itemsLabel.setText(cartItemDaoImpl.findFoodsByCartId(currentUser.getCartId()).size() + " item/s in the cart");
             SoundManager.playRemove();

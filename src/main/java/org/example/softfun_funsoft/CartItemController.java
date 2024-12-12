@@ -10,6 +10,7 @@ import org.example.softfun_funsoft.DaoImpl.FoodDaoImpl;
 import org.example.softfun_funsoft.listener.MyCartItemListener;
 import org.example.softfun_funsoft.model.CartItem;
 import org.example.softfun_funsoft.model.Food;
+import org.example.softfun_funsoft.singleton.CurrentUser;
 
 import java.util.List;
 
@@ -42,36 +43,41 @@ public class CartItemController {
     private int number;
     private CartDaoImpl cartDao;
 
-public void setData(Food food, MyCartItemListener myCartItemListener) {
-    this.myCartItemListener = myCartItemListener;
-    this.cartItemDaoImpl = new CartItemDaoImpl(); // Initialize CartItemDaoImpl
-    this.foodDaoImpl = new FoodDaoImpl(); // Initialize FoodDaoImpl
-    this.cartDao = new CartDaoImpl(); // Initialize CartDaoImpl
+    private Food food;
+    private CurrentUser currentUser;
+    public void setData(Food food, MyCartItemListener myCartItemListener) {
+        this.food = food;
+        this.myCartItemListener = myCartItemListener;
+        this.cartItemDaoImpl = new CartItemDaoImpl(); // Initialize CartItemDaoImpl
+        this.foodDaoImpl = new FoodDaoImpl(); // Initialize FoodDaoImpl
+        this.cartDao = new CartDaoImpl(); // Initialize CartDaoImpl
+        this.currentUser = CurrentUser.getInstance();
 
-    CartItem currentCartItem = cartItemDaoImpl.getCartItemByFoodId(food.getFoodId());
-    int currentCartId = currentCartItem.getCartId(); // Get the current cart ID
-    List<CartItem> cartItems = cartItemDaoImpl.findAllByCartId(currentCartId); // Get all cart items for the current cart
+        CartItem cartItem = cartItemDaoImpl.getCartItemByFoodId(food.getFoodId(), currentUser.getCartId());
+        System.out.println("Food ID: " + food.getFoodId());
+        System.out.println("Cart Item: " + cartItem.getFoodId());
 
-    // Find the index of the current cart item
-    number = 1; // Initialize number to 1
-    for (CartItem item : cartItems) {
-        if (item.getFoodId() == currentCartItem.getFoodId()) {
-            break;
+        List<CartItem> cartItems = cartItemDaoImpl.findAllByCartId(currentUser.getCartId()); // Get all cart items for the current cart
+
+        // Find the index of the current cart item
+        number = 1; // Initialize number to 1
+        for (CartItem item : cartItems) {
+            if (item.getFoodId() == cartItem.getFoodId()) {
+                break;
+            }
+            number++;
         }
-        number++;
+
+        itemName.setText(food.getName());
+        itemNumber.setText(String.valueOf(number));
+        System.out.println("Item Quantity In the Controller: " + cartItem.getQuantity());
+        itemQuantity.setText(String.valueOf(cartItem.getQuantity()));
+        itemPrice.setText(String.valueOf(food.getPrice()));
+        totalPrice.setText(String.valueOf(food.getPrice() * cartItem.getQuantity()));
+        img.setImage(new javafx.scene.image.Image(getClass().getResourceAsStream(food.getImgSrc())));
+
+        removeBTN.setOnAction(e -> {
+            myCartItemListener.onRemoveItem(this.food);
+        });
     }
-
-    System.out.println(currentCartItem.getQuantity());
-
-    itemName.setText(food.getName());
-    itemNumber.setText(String.valueOf(number));
-    itemQuantity.setText(String.valueOf(currentCartItem.getQuantity()));
-    itemPrice.setText("PHP " + food.getPrice());
-    totalPrice.setText("PHP " + (food.getPrice() * currentCartItem.getQuantity()));
-    img.setImage(new javafx.scene.image.Image(getClass().getResourceAsStream(food.getImgSrc())));
-
-    removeBTN.setOnAction(e -> {
-        myCartItemListener.onRemoveItem(food);
-    });
-}
 }
