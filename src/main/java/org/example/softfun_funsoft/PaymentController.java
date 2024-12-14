@@ -1,6 +1,7 @@
 package org.example.softfun_funsoft;
 
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -28,6 +29,8 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+
+import javafx.concurrent.Task;
 
 public class PaymentController implements Initializable {
     @FXML
@@ -61,82 +64,75 @@ public class PaymentController implements Initializable {
 
     }
 
-    private void proceedToPaymentPage(){
 
-        if(currentUser.getPaymentType().equals("Card")){
-            try {
-                Parent newRoot = FXMLLoader.load(getClass().getResource("CardPayment.fxml"));
-
-                Node currentRoot = rootStackPane.getChildren().get(rootStackPane.getChildren().size() - 1);
-
-                FadeTransition fadeOut = new FadeTransition(Duration.millis(500), currentRoot);
-                fadeOut.setFromValue(1.0);
-                fadeOut.setToValue(0.0);
-                fadeOut.setOnFinished(e -> {
-
-                    rootStackPane.getChildren().remove(currentRoot);
-                    rootStackPane.getChildren().add(newRoot);
-
+private void proceedToPaymentPage() {
+    Task<Void> task = new Task<Void>() {
+        @Override
+        protected Void call() throws Exception {
+            if (currentUser.getPaymentType().equals("Card")) {
+                Platform.runLater(() -> {
+                    try {
+                        Parent newRoot = FXMLLoader.load(getClass().getResource("CardPayment.fxml"));
+                        Node currentRoot = rootStackPane.getChildren().get(rootStackPane.getChildren().size() - 1);
+                        FadeTransition fadeOut = new FadeTransition(Duration.millis(500), currentRoot);
+                        fadeOut.setFromValue(1.0);
+                        fadeOut.setToValue(0.0);
+                        fadeOut.setOnFinished(e -> {
+                            rootStackPane.getChildren().remove(currentRoot);
+                            rootStackPane.getChildren().add(newRoot);
+                        });
+                        fadeOut.play();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 });
+            } else {
+                try {
+                    double totalFoodAmount = cartItemDao.getTotalAmountByCartId(currentUser.getCartId());
+                    double taxAmount = totalFoodAmount * 0.05;
+                    Orders order = new Orders();
+                    order.setUserId(currentUser.getUserId());
+                    order.setDineIn(currentUser.getDineIn());
+                    order.setPaymentType(currentUser.getPaymentType());
+                    order.setTotalAmount(totalFoodAmount + taxAmount);
+                    ordersDao.save(order);
 
+                    Payments payments = new Payments();
+                    payments.setOrderId(ordersDao.getOrderIdByUserId(currentUser.getUserId()));
+                    payments.setAmount(totalFoodAmount + taxAmount);
+                    paymentsDao.save(payments);
 
-                fadeOut.play();
-            } catch (IOException e) {
-                e.printStackTrace();
+                    Receipts receipts = new Receipts();
+                    receipts.setOrderId(ordersDao.getOrderIdByUserId(currentUser.getUserId()));
+                    receipts.setReceiptUrl("Not Applicable, Only for Card Payment");
+                    receiptsDao.save(receipts);
+
+                    Platform.runLater(() -> {
+                        try {
+                            Parent newRoot = FXMLLoader.load(getClass().getResource("Receipt.fxml"));
+                            Node currentRoot = rootStackPane.getChildren().get(rootStackPane.getChildren().size() - 1);
+                            FadeTransition fadeOut = new FadeTransition(Duration.millis(500), currentRoot);
+                            fadeOut.setFromValue(1.0);
+                            fadeOut.setToValue(0.0);
+                            fadeOut.setOnFinished(e -> {
+                                rootStackPane.getChildren().remove(currentRoot);
+                                rootStackPane.getChildren().add(newRoot);
+                            });
+                            fadeOut.play();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-
-
-
-        }else{
-            try {
-
-
-                double totalFoodAmount = cartItemDao.getTotalAmountByCartId(currentUser.getCartId());
-                double taxAmount = totalFoodAmount * 0.05;
-                Orders order = new Orders();
-                order.setUserId(currentUser.getUserId());
-                order.setDineIn(currentUser.getDineIn());
-                order.setPaymentType(currentUser.getPaymentType());
-                order.setTotalAmount(totalFoodAmount + taxAmount);
-                ordersDao.save(order);
-
-
-                Payments payments = new Payments();
-                payments.setOrderId(ordersDao.getOrderIdByUserId(currentUser.getUserId()));
-                payments.setAmount(totalFoodAmount + taxAmount);
-                paymentsDao.save(payments);
-
-
-                Receipts receipts = new Receipts();
-                receipts.setOrderId(ordersDao.getOrderIdByUserId(currentUser.getUserId()));
-                receipts.setReceiptUrl("Not Applicable, Only for Card Payment");
-                receiptsDao.save(receipts);
-
-                Parent newRoot = FXMLLoader.load(getClass().getResource("Receipt.fxml"));
-
-                Node currentRoot = rootStackPane.getChildren().get(rootStackPane.getChildren().size() - 1);
-
-                FadeTransition fadeOut = new FadeTransition(Duration.millis(500), currentRoot);
-                fadeOut.setFromValue(1.0);
-                fadeOut.setToValue(0.0);
-                fadeOut.setOnFinished(e -> {
-
-                    rootStackPane.getChildren().remove(currentRoot);
-                    rootStackPane.getChildren().add(newRoot);
-
-                });
-
-
-                fadeOut.play();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
+            return null;
         }
+    };
 
-    }
-
+    new Thread(task).start();
+}
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         foodDao = new FoodDaoImpl();
