@@ -150,8 +150,18 @@ public class ReceiptController implements Initializable {
         timeline.play(); // Start the timer
     }
 
+
+    private void updateStock() {
+        for (CartItem food : cartItemDao.findAllByCartId(currentUser.getCartId())) {
+            Food currentFood = foodDao.findById(food.getFoodId());
+            currentFood.setStock(currentFood.getStock() - food.getQuantity());
+            foodDao.update(currentFood);
+        }
+    }
+
     private void changeScene() {
         System.out.println("changing scenes");
+        updateStock();
         try {
             Stage currentStage = (Stage) receiptAnchorPane.getScene().getWindow();
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("bye.fxml"));

@@ -108,6 +108,13 @@ public class MainMenuController implements Initializable {
     @FXML
     private Label grandTotal;
 
+    @FXML
+    private Label orderListLabel;
+
+    @FXML
+    private Label stockLabel;
+
+
     private MyItemListener myItemListener;
     private MyCategoryListener myCategoryListener;
     private MyCartItemListener myCartItemListener;
@@ -123,7 +130,9 @@ public class MainMenuController implements Initializable {
     private CurrentUser currentUser;
     private CartItemDaoImpl cartItemDaoImpl;
 
+
     private int currentQuantity = 1;
+    private int stock;
     Timer timer = new Timer();
     Runnable embedFoodTask = () -> {
         String searchName = searchBar.getText().toLowerCase();
@@ -169,13 +178,21 @@ public class MainMenuController implements Initializable {
     }
 
     public void setAddQuantity() {
-        currentQuantity++;
-        quantity.setText(String.valueOf(currentQuantity));
-        SoundManager.playAddandSubt();
+        if(currentQuantity < stock){
+            quantity.setStyle("-fx-text-fill: black;");
+            currentQuantity++;
+            quantity.setText(String.valueOf(currentQuantity));
+            SoundManager.playAddandSubt();
+        }else{
+
+            quantity.setStyle("-fx-text-fill: red;");
+        }
+
     }
 
     public void setSubtractQuantity() {
         if (currentQuantity > 1) {
+            quantity.setStyle("-fx-text-fill: black;");
             currentQuantity--;
             quantity.setText(String.valueOf(currentQuantity));
             SoundManager.playAddandSubt();
@@ -239,6 +256,7 @@ public class MainMenuController implements Initializable {
     }
 
     public void showCart() {
+        orderListLabel.setVisible(false);
         double totalPrice = 0;
         cartGrid.getChildren().clear();
         int column = 0;
@@ -391,6 +409,7 @@ public class MainMenuController implements Initializable {
     }
 
     public void cancelButton() {
+        orderListLabel.setVisible(true);
         if (!orderPanel.isVisible() && !cartPane.isVisible()) {
             System.out.println("True, they are both hidden");
             cartItemDaoImpl.deleteAllByCartId(currentUser.getCartId());
@@ -423,10 +442,14 @@ public class MainMenuController implements Initializable {
     }
 
     private void setChosenFood(Food food) {
+        stock = food.getStock();
+
         chosenFood = food;
         confirmPanelItemname.setText(chosenFood.getName());
         orderPanelItemPrice.setText("PHP " + chosenFood.getPrice());
+        stockLabel.setText("Stock: " + chosenFood.getStock());
         confirmPanelImg.setImage(new Image(getClass().getResourceAsStream(chosenFood.getImgSrc())));
+
     }
 
     public void embedCategories() {
