@@ -143,19 +143,17 @@ public class ReceiptController implements Initializable {
     public void startTimer() {
         timeline = new Timeline(
                 new KeyFrame(Duration.seconds(1), event -> {
-                    // Update the label every second
                     if (timeRemaining > 0) {
                         timeRemaining--;
                         timer.setText(timeRemaining + "s");
                     } else {
-                        // Call the method when the timer reaches zero
                         changeScene();
-                        timeline.stop(); // Stop the timer when finished
+                        timeline.stop();
                     }
                 })
         );
-        timeline.setCycleCount(Timeline.INDEFINITE); // Run indefinitely until stopped
-        timeline.play(); // Start the timer
+        timeline.setCycleCount(Timeline.INDEFINITE); 
+        timeline.play();
     }
 
 
