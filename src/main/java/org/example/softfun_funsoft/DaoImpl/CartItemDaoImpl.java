@@ -175,7 +175,7 @@ public class CartItemDaoImpl implements CartItemDao {
 
     public List<CartItem> findAllByCartId(int cartId) {
         List<CartItem> cartItems = new ArrayList<>();
-        String sql = "SELECT * FROM CartItems WHERE cart_id = ?";
+        String sql = "SELECT * FROM CartItems WHERE cart_id = ? ORDER BY cart_item_id";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, cartId);
