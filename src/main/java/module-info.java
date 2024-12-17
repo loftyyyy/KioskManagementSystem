@@ -13,6 +13,7 @@ module org.example.softfun_funsoft {
     requires javafx.web;
     requires java.sql;
     requires com.zaxxer.hikari;
+    requires javafx.swing;
 
 
     opens org.example.softfun_funsoft to javafx.fxml;

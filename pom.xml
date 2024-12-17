@@ -49,6 +49,13 @@
     </dependency>
 
 
+    <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-swing -->
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-swing</artifactId>
+      <version>23.0.1</version>
+    </dependency>
+
 
     <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
     <dependency>

@@ -8,7 +8,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -22,11 +26,14 @@ import org.example.softfun_funsoft.singleton.CardReceiptData;
 import javafx.print.PrinterJob;
 import org.example.softfun_funsoft.singleton.CurrentUser;
 
+import javax.imageio.ImageIO;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
+import javafx.embed.swing.SwingFXUtils;
 
 public class ReceiptController implements Initializable {
     @FXML
@@ -78,6 +85,7 @@ public class ReceiptController implements Initializable {
 
     private Double totalAmount;
     private Double taxAmount;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
@@ -95,7 +103,7 @@ public class ReceiptController implements Initializable {
         totalAmount = cartItemDao.getTotalAmountByCartId(currentUser.getCartId());
         taxAmount = totalAmount * 0.05;
 
-        if(currentUser.getPaymentType().equals("Cash")) {
+        if (currentUser.getPaymentType().equals("Cash")) {
             paymentType.setText("Payment Type: Cash");
             cardType.setVisible(false);
             cardHolderName.setVisible(false);
@@ -108,7 +116,7 @@ public class ReceiptController implements Initializable {
 
 
             taxLabel.setText(String.format("PHP: %.2f", taxAmount));
-            grandTotal.setText(String.format("PHP: %.2f",totalAmount + taxAmount));
+            grandTotal.setText(String.format("PHP: %.2f", totalAmount + taxAmount));
             subTotal.setText(String.format("PHP: %.2f", totalAmount));
             orderType.setText("Order Type: " + (currentUser.getDineIn() ? "Dine In" : "Take out"));
         } else {
@@ -119,7 +127,7 @@ public class ReceiptController implements Initializable {
             cardType.setText("Card Type: " + cardPayment.getCardType());
             paymentType.setText("Payment Type: Card");
             taxLabel.setText(String.format("PHP: %.2f", taxAmount));
-            grandTotal.setText(String.format("PHP: %.2f",totalAmount + taxAmount));
+            grandTotal.setText(String.format("PHP: %.2f", totalAmount + taxAmount));
             subTotal.setText(String.format("PHP: %.2f", totalAmount));
             orderType.setText("Order Type: " + (currentUser.getDineIn() ? "Dine In" : "Take out"));
         }
@@ -183,10 +191,18 @@ public class ReceiptController implements Initializable {
         }
     }
 
-    public void printReceipt() {
+    public void printReceipt() throws IOException {
+        WritableImage snapshot = receiptAnchorPane.snapshot(new SnapshotParameters(), null);
+        File file = new File("receipt.png");
+        ImageIO.write(SwingFXUtils.fromFXImage(snapshot, null), "png", file);
+
+        Image image = new Image(file.toURI().toString());
+
+        ImageView imageView = new ImageView(image);
+
         PrinterJob job = PrinterJob.createPrinterJob();
         if (job != null && job.showPrintDialog(receiptAnchorPane.getScene().getWindow())) {
-            boolean success = job.printPage(receiptAnchorPane);
+            boolean success = job.printPage(imageView);
             if (success) {
                 job.endJob();
             }
