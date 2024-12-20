@@ -80,7 +80,10 @@
                         <Font name="Gill Sans MT" size="40.0" />
                      </font>
                   </Label>
-                  <Label fx:id="stockLabel" layoutX="331.0" layoutY="246.0" prefHeight="17.0" prefWidth="82.0" text="Stock:" />
+                  <Label fx:id="stockLabel" layoutX="527.0" layoutY="213.0" prefHeight="17.0" prefWidth="82.0" text="Stock:">
+                     <font>
+                        <Font size="20.0" />
+                     </font></Label>
                </children>
             </AnchorPane>
             <TextField fx:id="searchBar" layoutX="1111.0" layoutY="135.0" onKeyReleased="#getSearch" prefHeight="48.0" prefWidth="399.0" promptText="Type to Search" style="-fx-background-radius: 100;">

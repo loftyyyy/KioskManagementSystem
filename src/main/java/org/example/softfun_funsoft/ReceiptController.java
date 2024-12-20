@@ -138,6 +138,8 @@ public class ReceiptController implements Initializable {
             itemsContainer.getChildren().add(itemLabel);
         }
 
+        updateStock();
+
     }
 
     public void startTimer() {
@@ -154,6 +156,7 @@ public class ReceiptController implements Initializable {
         );
         timeline.setCycleCount(Timeline.INDEFINITE); 
         timeline.play();
+
     }
 
 
@@ -167,7 +170,6 @@ public class ReceiptController implements Initializable {
 
     private void changeScene() {
         System.out.println("changing scenes");
-        updateStock();
         try {
             Stage currentStage = (Stage) receiptAnchorPane.getScene().getWindow();
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("bye.fxml"));

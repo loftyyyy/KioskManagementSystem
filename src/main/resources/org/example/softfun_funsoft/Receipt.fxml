@@ -112,7 +112,7 @@
                         <Font name="Monospaced Bold" size="20.0" />
                      </font>
                   </Label>
-                  <Label fx:id="grandTotal" alignment="CENTER_RIGHT" layoutX="212.0" layoutY="598.0" prefHeight="46.0" prefWidth="212.0" text="PHP 36.0">
+                  <Label fx:id="grandTotal" alignment="TOP_LEFT" layoutX="212.0" layoutY="598.0" prefHeight="46.0" prefWidth="246.0" text="PHP 36.0">
                      <font>
                         <Font name="Monospaced Bold" size="30.0" />
                      </font>

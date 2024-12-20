@@ -15,6 +15,7 @@ import org.example.softfun_funsoft.model.Orders;
 import org.example.softfun_funsoft.model.Payments;
 import org.example.softfun_funsoft.model.Receipts;
 import org.example.softfun_funsoft.singleton.CurrentUser;
+import org.example.softfun_funsoft.utils.SoundManager;
 
 import java.io.IOException;
 import java.net.URL;
@@ -111,6 +112,7 @@ public class PaymentController implements Initializable {
         paymentsDao = new PaymentsDaoImpl();
         receiptsDao = new ReceiptsDaoImpl();
         executorService = Executors.newFixedThreadPool(2); // Limit threads to avoid overload
+        SoundManager.playPaymentType();
     }
 
     public void shutdownExecutor() {
